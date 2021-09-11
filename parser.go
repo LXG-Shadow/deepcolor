@@ -34,22 +34,22 @@ func newBaseMap(collection Item) map[string]string {
 	return baseMap
 }
 
-func getTextValue(i interface{},rule ItemRule) (value string) {
+func getTextValue(i interface{}, rule ItemRule) (value string) {
 	t := i.(TentacleTextResult)
-	if rule.Selector == ""{
+	if rule.Selector == "" {
 		return ""
 	}
-	return subText(regexp.MustCompile(rule.Selector).FindString(t.Data.(string)),rule)
+	return subText(regexp.MustCompile(rule.Selector).FindString(t.Data.(string)), rule)
 }
 
-func getTextValues(i interface{},rule ItemRule) (values []string) {
+func getTextValues(i interface{}, rule ItemRule) (values []string) {
 	t := i.(TentacleTextResult)
 	values = make([]string, 0)
-	if rule.Selector == ""{
+	if rule.Selector == "" {
 		return
 	}
-	for _, val := range regexp.MustCompile(rule.Selector).FindAllString(t.Data.(string), 0) {
-		values = append(values, subText(val,rule))
+	for _, val := range regexp.MustCompile(rule.Selector).FindAllString(t.Data.(string), -1) {
+		values = append(values, subText(val, rule))
 	}
 	return
 }
@@ -66,8 +66,8 @@ func getHTMLValue(i interface{}, rule ItemRule) string {
 		attr, _ := subHTML(t.(*goquery.Document).Find(rule.Selector), rule).Attr(rule.Target.Value)
 		return attr
 	default:
-		text,_ := t.(*goquery.Document).Html()
-		return subText(regexp.MustCompile(rule.Selector).FindString(text),rule)
+		text, _ := t.(*goquery.Document).Html()
+		return subText(regexp.MustCompile(rule.Selector).FindString(text), rule)
 	}
 }
 
@@ -88,9 +88,9 @@ func getHTMLValues(i interface{}, rule ItemRule) (values []string) {
 			values = append(values, attr)
 		})
 	default:
-		text,_ := t.(*goquery.Document).Html()
+		text, _ := t.(*goquery.Document).Html()
 		for _, val := range regexp.MustCompile(rule.Selector).FindAllString(text, 0) {
-			values = append(values, subText(val,rule))
+			values = append(values, subText(val, rule))
 		}
 	}
 	return
