@@ -35,7 +35,6 @@ func (e *Engine) FetchTentacle(tentacle Tentacle) TentacleResult {
 		return nil
 	}
 	result, _ := Fetch(tentacle, e.requestFunc, e.ReqHandlers, e.RespHandlers)
-
 	return result
 }
 
@@ -68,8 +67,10 @@ func (e *Engine) SetPeriod(duration time.Duration) {
 	e.limiter.SetLimit(rate.Every(duration))
 }
 
-func (e *Engine) SetMaxConnectoin() {
-
+func (e *Engine) SetMaxConnectoin(burst int) {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+	e.limiter.SetBurst(burst)
 }
 
 func (e *Engine) SetRequestFunc(requestFunc RequestFunc) {
