@@ -1,4 +1,4 @@
-module github.com/LXG-Shadow/deepcolor
+module github.com/aynakeya/deepcolor
 
 go 1.16
 
