@@ -64,6 +64,7 @@ func getHTMLValue(i interface{}, rule ItemRule) string {
 		return subHTML(t.(*goquery.Document).Find(rule.Selector), rule).Text()
 	case SelectorTargetTypeHTMLAttribute:
 		attr, _ := subHTML(t.(*goquery.Document).Find(rule.Selector), rule).Attr(rule.Target.Value)
+		attr = subText(attr, rule)
 		return attr
 	default:
 		text, _ := t.(*goquery.Document).Html()
@@ -85,6 +86,7 @@ func getHTMLValues(i interface{}, rule ItemRule) (values []string) {
 	case SelectorTargetTypeHTMLAttribute:
 		t.(*goquery.Document).Find(rule.Selector).Each(func(i int, selection *goquery.Selection) {
 			attr, _ := subHTML(selection, rule).Attr(rule.Target.Value)
+			attr = subText(attr, rule)
 			values = append(values, attr)
 		})
 	default:
