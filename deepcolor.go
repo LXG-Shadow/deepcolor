@@ -19,9 +19,7 @@ type Engine struct {
 
 func NewEngine() *Engine {
 	return &Engine{
-		requestFunc: func(uri string, header map[string]string) string {
-			return Get(uri, header).String()
-		},
+		requestFunc:  Get,
 		context:      context.Background(),
 		limiter:      rate.NewLimiter(rate.Every(time.Millisecond*10), 1),
 		ReqHandlers:  make([]RequestHandler, 0),

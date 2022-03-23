@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/LXG-Shadow/deepcolor"
+	"github.com/aynakeya/deepcolor"
 )
 
 func main() {
@@ -11,7 +11,9 @@ func main() {
 	//	fmt.Println(tentacle.Url)
 	//	return true
 	//})
+	count := 0
 	engine.OnResponse(func(result deepcolor.TentacleResult) bool {
+		count++
 		fmt.Println(result.GetRequest().Url, result.GetSingle(deepcolor.Item{
 			Type: deepcolor.ItemTypeSingle,
 			Rules: []deepcolor.ItemRule{
@@ -23,8 +25,9 @@ func main() {
 		}))
 		return true
 	})
-	for i := 20200300; i < 20200345; i++ {
-		engine.FetchAsync(fmt.Sprintf("https://www.agefans.cc/detail/%d", i))
+	for i := 20200000; i < 20200345; i++ {
+		engine.FetchAsync(fmt.Sprintf("https://www.agemys.com/detail/%d", i))
 	}
 	engine.WaitUntilFinish()
+	fmt.Println(count)
 }

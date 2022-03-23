@@ -1,10 +1,6 @@
 package deepcolor
 
-import (
-	"errors"
-)
-
-type RequestFunc func(uri string, header map[string]string) string
+type RequestFunc func(uri string, header map[string]string) *HttpResponse
 type RequestHandler func(tentacle Tentacle) bool
 type ResponseHandler func(result TentacleResult) bool
 
@@ -43,9 +39,9 @@ func FetchText(tentacle Tentacle, requestFunc RequestFunc,
 	if !preprocess(tentacle, preHandlers) {
 		return nil, ErrorRequestCancelByPreprocessFunction
 	}
-	httpResult := requestFunc(tentacle.Url, tentacle.Header)
+	httpResult := requestFunc(tentacle.Url, tentacle.Header).String()
 	if httpResult == "" {
-		return nil, errors.New("http connection error")
+		return nil, ErrorHttpConnectionFail
 	}
 	tentacleResult := NewTentacleWithParser(tentacle, httpResult, TextResultParser)
 	defer postprocess(tentacleResult, postHandlers)
@@ -57,9 +53,9 @@ func FetchHTML(tentacle Tentacle, requestFunc RequestFunc,
 	if !preprocess(tentacle, preHandlers) {
 		return nil, ErrorRequestCancelByPreprocessFunction
 	}
-	httpResult := requestFunc(tentacle.Url, tentacle.Header)
+	httpResult := requestFunc(tentacle.Url, tentacle.Header).String()
 	if httpResult == "" {
-		return nil, errors.New("http connection error")
+		return nil, ErrorHttpConnectionFail
 	}
 	doc, err := NewDocumentFromStringWithEncoding(httpResult, tentacle.Charset)
 	if err != nil {
