@@ -1,7 +1,7 @@
 package deepcolor
 
 type RequestFunc func(uri string, header map[string]string) *HttpResponse
-type RequestHandler func(tentacle Tentacle) bool
+type RequestHandler func(tentacle *Tentacle) bool
 type ResponseHandler func(result *TentacleResult) bool
 
 func postprocess(tentacleResult *TentacleResult, handlers []ResponseHandler) bool {
@@ -13,7 +13,7 @@ func postprocess(tentacleResult *TentacleResult, handlers []ResponseHandler) boo
 	return true
 }
 
-func preprocess(tentacle Tentacle, handlers []RequestHandler) bool {
+func preprocess(tentacle *Tentacle, handlers []RequestHandler) bool {
 	for _, handler := range handlers {
 		if !handler(tentacle) {
 			return false
@@ -24,7 +24,7 @@ func preprocess(tentacle Tentacle, handlers []RequestHandler) bool {
 
 func Fetch(tentacle Tentacle, requestFunc RequestFunc,
 	preHandlers []RequestHandler, postHandlers []ResponseHandler) (result *TentacleResult, err error) {
-	if !preprocess(tentacle, preHandlers) {
+	if !preprocess(&tentacle, preHandlers) {
 		return nil, ErrorRequestCancelByPreprocessFunction
 	}
 	httpResult := requestFunc(tentacle.Url, tentacle.Header).String()
