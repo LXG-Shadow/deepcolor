@@ -26,6 +26,7 @@ var selectorApplicableMap = map[SelectorType]ResultType{
 	SelectorTypeHTMLInnerText: ResultTypeHTMl,
 	SelectorTypeHTMLAttribute: ResultTypeHTMl,
 	SelectorTypeTextRegExp:    ResultTypeText,
+	SelectorTypeJsonValue:     ResultTypeJson,
 }
 
 func (s SelectorType) GetValidResultType() ResultType {
@@ -37,6 +38,7 @@ const (
 	SelectorTypeHTMLAttribute SelectorType = 1
 
 	SelectorTypeTextRegExp SelectorType = 2
+	SelectorTypeJsonValue  SelectorType = 3
 )
 
 type Selector struct {
@@ -63,6 +65,13 @@ func AttributeSelector(selector string, attribute string) Selector {
 func RegExpSelector(selector string) Selector {
 	return Selector{
 		Type: SelectorTypeTextRegExp,
+		Key:  selector,
+	}
+}
+
+func JsonSelector(selector string) Selector {
+	return Selector{
+		Type: SelectorTypeJsonValue,
 		Key:  selector,
 	}
 }

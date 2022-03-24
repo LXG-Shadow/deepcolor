@@ -1,5 +1,9 @@
 package deepcolor
 
+import (
+	"github.com/tidwall/gjson"
+)
+
 type RequestFunc func(uri string, header map[string]string) *HttpResponse
 type RequestHandler func(tentacle *Tentacle) bool
 type ResponseHandler func(result *TentacleResult) bool
@@ -65,6 +69,15 @@ func MakeParser(result *TentacleResult, httpResult string) error {
 			Data:      doc,
 			GetValue:  getHTMLValue,
 			GetValues: getHTMLValues,
+		}
+	}
+	if r_type.Contains(ResultTypeJson) {
+		g := gjson.Parse(httpResult)
+		result.Parsers[2] = &ResultParser{
+			Type:      ResultTypeJson,
+			Data:      g,
+			GetValue:  getJSONValue,
+			GetValues: getJSONValues,
 		}
 	}
 	return nil

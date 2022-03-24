@@ -15,6 +15,14 @@ func TentacleHTML(uri, charset string) Tentacle {
 	}
 }
 
+func TentacleJson(uri, charset string) Tentacle {
+	return Tentacle{
+		Url:         uri,
+		Charset:     charset,
+		ContentType: ResultTypeJson | ResultTypeText,
+	}
+}
+
 type ResultParser struct {
 	Type      ResultType
 	Data      interface{}
