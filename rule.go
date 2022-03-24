@@ -1,6 +1,5 @@
 package deepcolor
 
-
 type Item struct {
 	Type  ItemType   `json:"type"`
 	Rules []ItemRule `json:"rules"`
@@ -17,39 +16,53 @@ const (
 
 type ItemRule struct {
 	Key          string            `json:"key"`
-	Selector     string            `json:"selector"`
-	Target       SelectorTarget    `json:"target"`
+	Selector     Selector          `json:"selector"`
 	Substitution map[string]string `json:"substitution"`
 }
 
-type SelectorTargetType string
+type SelectorType int
+
+var selectorApplicableMap = map[SelectorType]ResultType{
+	SelectorTypeHTMLInnerText: ResultTypeHTMl,
+	SelectorTypeHTMLAttribute: ResultTypeHTMl,
+	SelectorTypeTextRegExp:    ResultTypeText,
+}
+
+func (s SelectorType) GetValidResultType() ResultType {
+	return selectorApplicableMap[s]
+}
 
 const (
-	SelectorTargetTypeHTMLInnerText SelectorTargetType = "html_innertext"
-	SelectorTargetTypeHTMLAttribute SelectorTargetType = "html_attribute"
+	SelectorTypeHTMLInnerText SelectorType = 0
+	SelectorTypeHTMLAttribute SelectorType = 1
 
-	SelectorTargetTypeTextRegExp SelectorTargetType = "text_regexp"
-
-	//SelectorTargetTypeJson SelectorTargetType = "json"
+	SelectorTypeTextRegExp SelectorType = 2
 )
 
-type SelectorTarget struct {
-	Type  SelectorTargetType
+type Selector struct {
+	Type  SelectorType
+	Key   string
 	Value string
 }
 
-func TextTarget() SelectorTarget {
-	return SelectorTarget{SelectorTargetTypeHTMLInnerText, ""}
+func TextSelector(selector string) Selector {
+	return Selector{
+		Type: SelectorTypeHTMLInnerText,
+		Key:  selector,
+	}
 }
 
-func AttributeTarget(attribute string) SelectorTarget {
-	return SelectorTarget{SelectorTargetTypeHTMLAttribute, attribute}
+func AttributeSelector(selector string, attribute string) Selector {
+	return Selector{
+		Type:  SelectorTypeHTMLInnerText,
+		Key:   selector,
+		Value: attribute,
+	}
 }
 
-func RegExpTarget() SelectorTarget {
-	return SelectorTarget{SelectorTargetTypeTextRegExp, ""}
+func RegExpSelector(selector string) Selector {
+	return Selector{
+		Type: SelectorTypeTextRegExp,
+		Key:  selector,
+	}
 }
-//
-//func JsonTarget() SelectorTarget {
-//	return SelectorTarget{SelectorTargetTypeJson, ""}
-//}

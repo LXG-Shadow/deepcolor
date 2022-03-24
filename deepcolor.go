@@ -9,7 +9,7 @@ import (
 
 type Engine struct {
 	lock         sync.RWMutex
-	waitGroup    sync.WaitGroup
+	waitGroup    *WaitGroup
 	limiter      *rate.Limiter
 	context      context.Context
 	requestFunc  RequestFunc
@@ -18,8 +18,11 @@ type Engine struct {
 }
 
 func NewEngine() *Engine {
+	var mywat WaitGroup
+	mywat.SetMaxConnection(1024)
 	return &Engine{
 		requestFunc:  Get,
+		waitGroup:    &mywat,
 		context:      context.Background(),
 		limiter:      rate.NewLimiter(rate.Every(time.Millisecond*10), 1),
 		ReqHandlers:  make([]RequestHandler, 0),
@@ -27,7 +30,7 @@ func NewEngine() *Engine {
 	}
 }
 
-func (e *Engine) FetchTentacle(tentacle Tentacle) TentacleResult {
+func (e *Engine) FetchTentacle(tentacle Tentacle) *TentacleResult {
 	err := e.limiter.WaitN(e.context, 1)
 	if err != nil {
 		return nil
@@ -36,7 +39,7 @@ func (e *Engine) FetchTentacle(tentacle Tentacle) TentacleResult {
 	return result
 }
 
-func (e *Engine) Fetch(uri string) TentacleResult {
+func (e *Engine) Fetch(uri string) *TentacleResult {
 	return e.FetchTentacle(TentacleHTML(uri, "utf-8"))
 }
 func (e *Engine) FetchTentacleAsync(tentacle Tentacle) {
@@ -65,10 +68,16 @@ func (e *Engine) SetPeriod(duration time.Duration) {
 	e.limiter.SetLimit(rate.Every(duration))
 }
 
-func (e *Engine) SetMaxConnectoin(burst int) {
+func (e *Engine) SetBurst(burst int) {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	e.limiter.SetBurst(burst)
+}
+
+func (e *Engine) SetMaxConnection(conn int) {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+	e.waitGroup.SetMaxConnection(conn)
 }
 
 func (e *Engine) SetRequestFunc(requestFunc RequestFunc) {

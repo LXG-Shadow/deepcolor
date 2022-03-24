@@ -12,20 +12,25 @@ func main() {
 	//	return true
 	//})
 	count := 0
-	engine.OnResponse(func(result deepcolor.TentacleResult) bool {
+	//engine.SetBurst(1)
+	//engine.SetPeriod(time.Second * 1)
+	engine.SetMaxConnection(5)
+	engine.OnResponse(func(result *deepcolor.TentacleResult) bool {
+		//a := rand.Intn(10)
+		//fmt.Printf("Sleep %d, Get %s\n", a, result.Request.Url)
+		//time.Sleep(time.Second * time.Duration(a))
 		count++
 		fmt.Println(result.GetRequest().Url, result.GetSingle(deepcolor.Item{
 			Type: deepcolor.ItemTypeSingle,
 			Rules: []deepcolor.ItemRule{
 				{
-					Selector: ".detail_imform_name",
-					Target:   deepcolor.TextTarget(),
+					Selector: deepcolor.TextSelector(".detail_imform_name"),
 				},
 			},
 		}))
 		return true
 	})
-	for i := 20200000; i < 20200345; i++ {
+	for i := 20200300; i < 20200345; i++ {
 		engine.FetchAsync(fmt.Sprintf("https://www.agemys.com/detail/%d", i))
 	}
 	engine.WaitUntilFinish()

@@ -2,9 +2,9 @@ package deepcolor
 
 type RequestFunc func(uri string, header map[string]string) *HttpResponse
 type RequestHandler func(tentacle Tentacle) bool
-type ResponseHandler func(result TentacleResult) bool
+type ResponseHandler func(result *TentacleResult) bool
 
-func postprocess(tentacleResult TentacleResult, handlers []ResponseHandler) bool {
+func postprocess(tentacleResult *TentacleResult, handlers []ResponseHandler) bool {
 	for _, handler := range handlers {
 		if !handler(tentacleResult) {
 			return false
@@ -23,19 +23,7 @@ func preprocess(tentacle Tentacle, handlers []RequestHandler) bool {
 }
 
 func Fetch(tentacle Tentacle, requestFunc RequestFunc,
-	preHandlers []RequestHandler, postHandlers []ResponseHandler) (result TentacleResult, err error) {
-	switch tentacle.ContentType {
-	case TentacleContentTypeHTMl:
-		return FetchHTML(tentacle, requestFunc, preHandlers, postHandlers)
-	case TentacleContentTypeText:
-		return FetchText(tentacle, requestFunc, preHandlers, postHandlers)
-	default:
-		return FetchHTML(tentacle, requestFunc, preHandlers, postHandlers)
-	}
-}
-
-func FetchText(tentacle Tentacle, requestFunc RequestFunc,
-	preHandlers []RequestHandler, postHandlers []ResponseHandler) (result TentacleResult, err error) {
+	preHandlers []RequestHandler, postHandlers []ResponseHandler) (result *TentacleResult, err error) {
 	if !preprocess(tentacle, preHandlers) {
 		return nil, ErrorRequestCancelByPreprocessFunction
 	}
@@ -43,25 +31,41 @@ func FetchText(tentacle Tentacle, requestFunc RequestFunc,
 	if httpResult == "" {
 		return nil, ErrorHttpConnectionFail
 	}
-	tentacleResult := NewTentacleWithParser(tentacle, httpResult, TextResultParser)
-	defer postprocess(tentacleResult, postHandlers)
-	return tentacleResult, nil
+	result = &TentacleResult{
+		Request: tentacle,
+		Parsers: [3]*ResultParser{},
+	}
+	err = MakeParser(result, httpResult)
+
+	if err == nil {
+		defer postprocess(result, postHandlers)
+	}
+	return result, err
 }
 
-func FetchHTML(tentacle Tentacle, requestFunc RequestFunc,
-	preHandlers []RequestHandler, postHandlers []ResponseHandler) (result TentacleResult, err error) {
-	if !preprocess(tentacle, preHandlers) {
-		return nil, ErrorRequestCancelByPreprocessFunction
+func MakeParser(result *TentacleResult, httpResult string) error {
+	r_type := result.Request.ContentType
+	if r_type.Contains(ResultTypeText) {
+		//fmt.Println("initialize text parser")
+		result.Parsers[0] = &ResultParser{
+			Type:      ResultTypeText,
+			Data:      httpResult,
+			GetValue:  getTextValue,
+			GetValues: getTextValues,
+		}
 	}
-	httpResult := requestFunc(tentacle.Url, tentacle.Header).String()
-	if httpResult == "" {
-		return nil, ErrorHttpConnectionFail
+	if r_type.Contains(ResultTypeHTMl) {
+		//fmt.Println("initialize html parser")
+		doc, err := NewDocumentFromStringWithEncoding(httpResult, result.Request.Charset)
+		if err != nil {
+			return err
+		}
+		result.Parsers[1] = &ResultParser{
+			Type:      ResultTypeHTMl,
+			Data:      doc,
+			GetValue:  getHTMLValue,
+			GetValues: getHTMLValues,
+		}
 	}
-	doc, err := NewDocumentFromStringWithEncoding(httpResult, tentacle.Charset)
-	if err != nil {
-		return nil, err
-	}
-	tentacleResult := NewTentacleWithParser(tentacle, doc, HTMLResultParser)
-	defer postprocess(tentacleResult, postHandlers)
-	return tentacleResult, nil
+	return nil
 }

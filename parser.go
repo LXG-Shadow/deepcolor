@@ -35,63 +35,61 @@ func newBaseMap(collection Item) map[string]string {
 }
 
 func getTextValue(i interface{}, rule ItemRule) (value string) {
-	t := i.(TentacleTextResult)
-	if rule.Selector == "" {
+	if rule.Selector.Key == "" {
 		return ""
 	}
-	return subText(regexp.MustCompile(rule.Selector).FindString(t.Data.(string)), rule)
+	return subText(regexp.MustCompile(rule.Selector.Key).FindString(i.(string)), rule)
 }
 
 func getTextValues(i interface{}, rule ItemRule) (values []string) {
-	t := i.(TentacleTextResult)
 	values = make([]string, 0)
-	if rule.Selector == "" {
+	if rule.Selector.Key == "" {
 		return
 	}
-	for _, val := range regexp.MustCompile(rule.Selector).FindAllString(t.Data.(string), -1) {
+	for _, val := range regexp.MustCompile(rule.Selector.Key).FindAllString(i.(string), -1) {
 		values = append(values, subText(val, rule))
 	}
 	return
 }
 
 func getHTMLValue(i interface{}, rule ItemRule) string {
-	t := i.(TentacleTextResult).Data
-	if rule.Selector == "" {
+	t := i.(*goquery.Document)
+	if rule.Selector.Key == "" {
 		return ""
 	}
-	switch rule.Target.Type {
-	case SelectorTargetTypeHTMLInnerText:
-		return subHTML(t.(*goquery.Document).Find(rule.Selector), rule).Text()
-	case SelectorTargetTypeHTMLAttribute:
-		attr, _ := subHTML(t.(*goquery.Document).Find(rule.Selector), rule).Attr(rule.Target.Value)
+	switch rule.Selector.Type {
+	case SelectorTypeHTMLInnerText:
+		return subHTML(t.Find(rule.Selector.Key), rule).Text()
+	case SelectorTypeHTMLAttribute:
+		attr, _ := subHTML(t.Find(rule.Selector.Key), rule).Attr(rule.Selector.Value)
 		attr = subText(attr, rule)
 		return attr
 	default:
-		text, _ := t.(*goquery.Document).Html()
-		return subText(regexp.MustCompile(rule.Selector).FindString(text), rule)
+		text, _ := t.Html()
+		return subText(regexp.MustCompile(rule.Selector.Key).FindString(text), rule)
 	}
 }
 
 func getHTMLValues(i interface{}, rule ItemRule) (values []string) {
-	t := i.(TentacleTextResult).Data
+	t := i.(*goquery.Document)
 	values = make([]string, 0)
-	if rule.Selector == "" {
+	if rule.Selector.Key == "" {
 		return
 	}
-	switch rule.Target.Type {
-	case SelectorTargetTypeHTMLInnerText:
-		t.(*goquery.Document).Find(rule.Selector).Each(func(i int, selection *goquery.Selection) {
+	switch rule.Selector.Type {
+	case SelectorTypeHTMLInnerText:
+		t.Find(rule.Selector.Key).Each(func(i int, selection *goquery.Selection) {
 			values = append(values, subHTML(selection, rule).Text())
 		})
-	case SelectorTargetTypeHTMLAttribute:
-		t.(*goquery.Document).Find(rule.Selector).Each(func(i int, selection *goquery.Selection) {
-			attr, _ := subHTML(selection, rule).Attr(rule.Target.Value)
+	case SelectorTypeHTMLAttribute:
+		t.Find(rule.Selector.Key).Each(func(i int, selection *goquery.Selection) {
+			attr, _ := subHTML(selection, rule).Attr(rule.Selector.Value)
 			attr = subText(attr, rule)
 			values = append(values, attr)
 		})
 	default:
-		text, _ := t.(*goquery.Document).Html()
-		for _, val := range regexp.MustCompile(rule.Selector).FindAllString(text, 0) {
+		text, _ := t.Html()
+		for _, val := range regexp.MustCompile(rule.Selector.Key).FindAllString(text, 0) {
 			values = append(values, subText(val, rule))
 		}
 	}
