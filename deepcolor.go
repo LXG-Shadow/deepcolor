@@ -9,8 +9,9 @@ import (
 
 type Engine struct {
 	lock         sync.RWMutex
-	waitGroup    *WaitGroup
+	waitGroup    sync.WaitGroup
 	limiter      *rate.Limiter
+	waitChan     chan int
 	context      context.Context
 	requestFunc  RequestFunc
 	ReqHandlers  []RequestHandler
@@ -18,24 +19,25 @@ type Engine struct {
 }
 
 func NewEngine() *Engine {
-	var mywat WaitGroup
-	mywat.SetMaxConnection(1024)
-	return &Engine{
+	e := &Engine{
 		requestFunc:  Get,
-		waitGroup:    &mywat,
 		context:      context.Background(),
 		limiter:      rate.NewLimiter(rate.Every(time.Millisecond*10), 1),
 		ReqHandlers:  make([]RequestHandler, 0),
 		RespHandlers: make([]ResponseHandler, 0),
 	}
+	e.SetMaxConnection(1024)
+	return e
 }
 
 func (e *Engine) FetchTentacle(tentacle Tentacle) *TentacleResult {
 	err := e.limiter.WaitN(e.context, 1)
+	<-e.waitChan
 	if err != nil {
 		return nil
 	}
 	result, _ := Fetch(tentacle, e.requestFunc, e.ReqHandlers, e.RespHandlers)
+	e.waitChan <- 1
 	return result
 }
 
@@ -77,7 +79,10 @@ func (e *Engine) SetBurst(burst int) {
 func (e *Engine) SetMaxConnection(conn int) {
 	e.lock.Lock()
 	defer e.lock.Unlock()
-	e.waitGroup.SetMaxConnection(conn)
+	e.waitChan = make(chan int, conn)
+	for i := 1; i <= conn; i++ {
+		e.waitChan <- i
+	}
 }
 
 func (e *Engine) SetRequestFunc(requestFunc RequestFunc) {

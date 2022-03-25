@@ -14,7 +14,7 @@ func main() {
 	count := 0
 	//engine.SetBurst(1)
 	//engine.SetPeriod(time.Second * 1)
-	engine.SetMaxConnection(5)
+	//engine.SetMaxConnection(5)
 	engine.OnResponse(func(result *deepcolor.TentacleResult) bool {
 		//a := rand.Intn(10)
 		//fmt.Printf("Sleep %d, Get %s\n", a, result.Request.Url)
@@ -33,6 +33,7 @@ func main() {
 	for i := 20200300; i < 20200345; i++ {
 		engine.FetchAsync(fmt.Sprintf("https://www.agemys.com/detail/%d", i))
 	}
+	fmt.Println("1233")
 	engine.WaitUntilFinish()
 	fmt.Println(count)
 }
