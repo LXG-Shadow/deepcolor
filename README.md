@@ -5,4 +5,4 @@ A simple easy lightweight crawler framework by Aynakeya
 
 ## todo
 
-- engine async request are goroutine based => change to queue based
+- ~~engine async request are goroutine based => change to queue based~~
