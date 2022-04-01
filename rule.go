@@ -56,7 +56,7 @@ func TextSelector(selector string) Selector {
 
 func AttributeSelector(selector string, attribute string) Selector {
 	return Selector{
-		Type:  SelectorTypeHTMLInnerText,
+		Type:  SelectorTypeHTMLAttribute,
 		Key:   selector,
 		Value: attribute,
 	}
