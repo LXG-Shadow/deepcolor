@@ -7,7 +7,7 @@ import (
 
 func main() {
 	engine := deepcolor.NewEngine(5)
-	//engine.OnRequest(func(tentacle deepcolor.Tentacle) bool {
+	//engine.OnRequest(func(tentacle deepcolor.Request) bool {
 	//	fmt.Println(tentacle.Url)
 	//	return true
 	//})
@@ -15,7 +15,7 @@ func main() {
 	//engine.SetBurst(1)
 	//engine.SetPeriod(time.Second * 1)
 	//engine.SetMaxConnection(5)
-	engine.OnResponse(func(result *deepcolor.TentacleResult) bool {
+	engine.OnResponse(func(result *deepcolor.Response) bool {
 		//a := rand.Intn(10) + 5 + rand.Intn(10)
 		//
 		//fmt.Printf("Sleep %d, Get %s\n", a, result.Request.Url)

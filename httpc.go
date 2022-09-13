@@ -3,8 +3,6 @@ package deepcolor
 import (
 	"github.com/go-resty/resty/v2"
 	"math/rand"
-	"net/http"
-	"strings"
 	"time"
 )
 
@@ -33,56 +31,19 @@ func updateHeader(headers ...map[string]string) map[string]string {
 	return header
 }
 
-// HttpResponse struct
-// adapt from resty response.go
-type HttpResponse struct {
-	RawResponse *http.Response
-
-	body []byte
-	size int64
-}
-
-func (r *HttpResponse) Body() []byte {
-	if r.RawResponse == nil {
-		return []byte{}
-	}
-	return r.body
-}
-
-func (r *HttpResponse) StatusCode() int {
-	if r.RawResponse == nil {
-		return 0
-	}
-	return r.RawResponse.StatusCode
-}
-
-func (r *HttpResponse) Header() http.Header {
-	if r.RawResponse == nil {
-		return http.Header{}
-	}
-	return r.RawResponse.Header
-}
-
-func (r *HttpResponse) String() string {
-	if r.body == nil {
-		return ""
-	}
-	return strings.TrimSpace(string(r.body))
-}
-
 func GetRandomUserAgent() string {
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return fakeUserAgents[random.Intn(len(fakeUserAgents))]
 }
 
-func Get(url string, header map[string]string) *HttpResponse {
+func Get(url string, header map[string]string) *Response {
 	resp, err := resty.New().R().
 		SetHeaders(header).
 		Get(url)
 	if err != nil {
 		return nil
 	}
-	return &HttpResponse{
+	return &Response{
 		RawResponse: resp.RawResponse,
 		body:        resp.Body(),
 		size:        resp.Size(),
@@ -90,7 +51,7 @@ func Get(url string, header map[string]string) *HttpResponse {
 
 }
 
-func GetCORS(uri string, header map[string]string) *HttpResponse {
+func GetCORS(uri string, header map[string]string) *Response {
 	host := GetUrlHost(uri)
 	if header == nil {
 		header = map[string]string{}
@@ -102,7 +63,7 @@ func GetCORS(uri string, header map[string]string) *HttpResponse {
 	return Get(uri, header)
 }
 
-func Post(url string, header map[string]string, data map[string]string) *HttpResponse {
+func Post(url string, header map[string]string, data map[string]string) *Response {
 	resp, err := resty.New().R().
 		SetHeaders(header).
 		SetFormData(data).
@@ -110,7 +71,7 @@ func Post(url string, header map[string]string, data map[string]string) *HttpRes
 	if err != nil {
 		return nil
 	}
-	return &HttpResponse{
+	return &Response{
 		RawResponse: resp.RawResponse,
 		body:        resp.Body(),
 		size:        resp.Size(),

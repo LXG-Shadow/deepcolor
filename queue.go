@@ -86,7 +86,7 @@ func (q *Queue) resize(size int) {
 
 	// make front to 0
 	q.front = 0
-	// the back for the queue is now the element cout
+	// the back for the queue is now the element count
 	q.back = q.count
 	q.queue = newq
 }
