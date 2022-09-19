@@ -25,9 +25,28 @@ func (d *Deepcolor) OnResponse(handlers ...ResponseHandler) {
 	d.RespHandler = append(d.RespHandler, handlers...)
 }
 
+type TentacleMapper struct {
+	Selector   *Selector
+	Translator transform.Translator
+}
+
+func NewTentacleMapper(s *Selector, t transform.Translator) TentacleMapper {
+	return TentacleMapper{
+		Selector:   s,
+		Translator: t,
+	}
+}
+
+func NewTentacleSelector(s *Selector) TentacleMapper {
+	return TentacleMapper{
+		Selector:   s,
+		Translator: nil,
+	}
+}
+
 type Tentacle struct {
 	Parser       ResponseParser
-	ValueMapper  map[string]*Selector
+	ValueMapper  map[string]TentacleMapper
 	Transformers []*transform.Transformer
 	Handlers     []TentacleHandler
 }
@@ -39,7 +58,11 @@ func (t *Tentacle) Initialize(response *Response) error {
 func (t *Tentacle) GetItems() map[string]interface{} {
 	items := make(map[string]interface{})
 	for key, rule := range t.ValueMapper {
-		items[key] = t.Parser.Get(rule)
+		v := t.Parser.Get(rule.Selector)
+		if rule.Translator != nil {
+			v = rule.Translator.MustApply(v)
+		}
+		items[key] = v
 	}
 	return items
 }
@@ -47,8 +70,11 @@ func (t *Tentacle) GetItems() map[string]interface{} {
 func (t *Tentacle) Extract(value interface{}) {
 	for key, rule := range t.ValueMapper {
 		if v, ok := transform.Field(key).GetValueE(value); ok {
-			transform.SetFieldValue(t.Parser.Get(rule), v)
-			//v.Set(reflect.ValueOf(t.Parser.Get(rule)))
+			fv := t.Parser.Get(rule.Selector)
+			if rule.Translator != nil {
+				fv = rule.Translator.MustApply(fv)
+			}
+			transform.SetFieldValue(fv, v)
 		}
 	}
 }

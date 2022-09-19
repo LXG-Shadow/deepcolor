@@ -1,13 +1,29 @@
 package transform
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/aynakeya/deepcolor/util"
 	"gotest.tools/assert"
 	"regexp"
 	"testing"
 )
+
+func marshalIndentUnescape(v interface{}, prefix, indent string) (string, error) {
+	bf := bytes.NewBuffer([]byte{})
+	jsonEncoder := json.NewEncoder(bf)
+	jsonEncoder.SetEscapeHTML(false)
+	err := jsonEncoder.Encode(v)
+	if err != nil {
+		return "", err
+	}
+	var buf bytes.Buffer
+	err = json.Indent(&buf, bf.Bytes(), prefix, indent)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
 
 var testString = "【喵萌奶茶屋】★07月新番★[莉可丽丝/Lycoris Recoil][05][1080p][简繁内封][招募翻译校对][MKV]"
 
@@ -24,7 +40,7 @@ func TestRegExpTranslator_Marshalling(t *testing.T) {
 		regexp.MustCompile(`【喵萌奶茶屋】★07月新番★\[莉可丽丝/Lycoris Recoil]\[(.*)]\[1080p]\[简繁内封]\[招募翻译校对].*`),
 		"$1",
 	)
-	data, err := util.MarshalIndentUnescape(trans, "", "  ")
+	data, err := marshalIndentUnescape(trans, "", "  ")
 	if err != nil {
 		t.Fatalf("Marshlling failed")
 	}

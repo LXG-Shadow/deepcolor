@@ -1,20 +1,7 @@
 package deepcolor
 
-type ResultType int
-
-func (t ResultType) Contains(resultType ResultType) bool {
-	return (t & resultType) != 0
-}
-
-const (
-	ResultTypeText ResultType = 0b1
-	ResultTypeHTMl ResultType = 0b10
-	ResultTypeJson ResultType = 0b100
-	ResultTypeRSS  ResultType = 0b1000
-)
-
 type Requester interface {
-	Next(response *Response) (*Request, bool)
+	Next(response *Response) *Request
 }
 
 type Request struct {
@@ -27,12 +14,26 @@ type SingleRequest struct {
 	Url     string            `json:"url"`
 	Charset string            `json:"charset"`
 	Header  map[string]string `json:"header"`
+	flag    bool
 }
 
-func (r *SingleRequest) Next(response *Response) (*Request, bool) {
+func (r *SingleRequest) Next(response *Response) *Request {
+	if r.flag {
+		return nil
+	}
+	r.flag = true
 	return &Request{
 		Url:     r.Url,
 		Charset: r.Charset,
 		Header:  r.Header,
-	}, false
+	}
+}
+
+func NewSingleRequest(url string, charset string, header map[string]string) Requester {
+	return &SingleRequest{
+		Url:     url,
+		Charset: charset,
+		Header:  header,
+		flag:    false,
+	}
 }

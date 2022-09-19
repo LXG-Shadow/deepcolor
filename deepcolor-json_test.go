@@ -29,7 +29,7 @@ func TestFetchJson(t *testing.T) {
 			},
 		},
 	}
-	err := tenc.Initialize(Get("https://support.oneskyapp.com/hc/en-us/article_attachments/202761627/example_1.json", nil))
+	err := tenc.Initialize(QuickGet("https://support.oneskyapp.com/hc/en-us/article_attachments/202761627/example_1.json", nil))
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -37,7 +37,7 @@ func TestFetchJson(t *testing.T) {
 	var s InfoStructJson
 	tenc.ExtractAndTransform(&s)
 	assert.Equal(t, "Abble", s.X)
-	err = tenc.Initialize(Get("https://support.oneskyapp.com/hc/en-us/article_attachments/202761727/example_2.json", nil))
+	err = tenc.Initialize(QuickGet("https://support.oneskyapp.com/hc/en-us/article_attachments/202761727/example_2.json", nil))
 	if err != nil {
 		log.Fatal(err)
 		return

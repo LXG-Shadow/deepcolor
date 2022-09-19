@@ -5,36 +5,48 @@ import (
 	"github.com/aynakeya/deepcolor"
 )
 
+type agerequester struct {
+	id int
+}
+
+func (r *agerequester) Next(response *deepcolor.Response) *deepcolor.Request {
+	if r.id >= 20200445 {
+		return nil
+	}
+	req := &deepcolor.Request{
+		Url:     fmt.Sprintf("https://www.agemys.com/detail/%d", r.id),
+		Charset: "utf-8",
+	}
+	r.id++
+	return req
+}
+
 func main() {
 	engine := deepcolor.NewEngine(5)
-	//engine.OnRequest(func(tentacle deepcolor.Request) bool {
-	//	fmt.Println(tentacle.Url)
-	//	return true
-	//})
-	count := 0
 	//engine.SetBurst(1)
 	//engine.SetPeriod(time.Second * 1)
 	//engine.SetMaxConnection(5)
-	engine.OnResponse(func(result *deepcolor.Response) bool {
-		//a := rand.Intn(10) + 5 + rand.Intn(10)
-		//
-		//fmt.Printf("Sleep %d, Get %s\n", a, result.Request.Url)
-		//time.Sleep(time.Second * time.Duration(a))
-		count++
-		fmt.Println(result.GetRequest().Url, result.GetSingle(deepcolor.Item{
-			Type: deepcolor.ItemTypeSingle,
-			Rules: []deepcolor.ItemRule{
-				{
-					Selector: deepcolor.TextSelector(".detail_imform_name"),
+	dp := deepcolor.Deepcolor{
+		ReqFunc:     deepcolor.Get,
+		Requester:   &agerequester{id: 20200300},
+		ReqHandler:  nil,
+		RespHandler: nil,
+		Tentacles: []*deepcolor.Tentacle{
+			{
+				Parser: deepcolor.NewHTMLParser(),
+				ValueMapper: map[string]*deepcolor.Selector{
+					"Title": deepcolor.TextSelector(".detail_imform_name"),
+				},
+				Handlers: []deepcolor.TentacleHandler{
+					func(tentacle *deepcolor.Tentacle) {
+						fmt.Println(tentacle.GetItems()["Title"])
+					},
 				},
 			},
-		}))
-		return true
-	})
-	for i := 20200300; i < 20200345; i++ {
-		engine.FetchAsync(fmt.Sprintf("https://www.agemys.com/detail/%d", i))
+		},
 	}
+	engine.Add(&dp)
 	fmt.Println("1233")
 	engine.WaitUntilFinish()
-	fmt.Println(count)
+	fmt.Println("finished")
 }

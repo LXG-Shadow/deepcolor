@@ -36,7 +36,22 @@ func GetRandomUserAgent() string {
 	return fakeUserAgents[random.Intn(len(fakeUserAgents))]
 }
 
-func Get(url string, header map[string]string) *Response {
+func Get(req *Request) *Response {
+	resp, err := resty.New().R().
+		SetHeaders(req.Header).
+		Get(req.Url)
+	if err != nil {
+		return nil
+	}
+	return &Response{
+		Request:     req,
+		RawResponse: resp.RawResponse,
+		body:        resp.Body(),
+		size:        resp.Size(),
+	}
+}
+
+func QuickGet(url string, header map[string]string) *Response {
 	resp, err := resty.New().R().
 		SetHeaders(header).
 		Get(url)
@@ -60,7 +75,7 @@ func GetCORS(uri string, header map[string]string) *Response {
 		"origin":     host,
 		"referer":    host,
 		"user-agent": GetRandomUserAgent()})
-	return Get(uri, header)
+	return QuickGet(uri, header)
 }
 
 func Post(url string, header map[string]string, data map[string]string) *Response {

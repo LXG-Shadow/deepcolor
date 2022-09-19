@@ -11,6 +11,14 @@ type Cast struct {
 	ToType string
 }
 
+func NewCast(destType string) Translator {
+	t := &Cast{
+		ToType: destType,
+	}
+	t.Extend(t)
+	return t
+}
+
 func (c *Cast) Apply(value interface{}) (interface{}, error) {
 	switch c.ToType {
 	case "string":

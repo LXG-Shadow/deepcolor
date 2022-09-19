@@ -48,15 +48,11 @@ func (e *Engine) newAsyncWorker() {
 }
 
 func (e *Engine) Add(dp *Deepcolor) {
-	var ok = true
-	var req *Request
-	for ok {
-		req, ok = dp.Requester.Next(nil)
-		if req == nil {
-			break
-		}
+	var req = dp.Requester.Next(nil)
+	for req != nil {
+		r := req
+		e.waitGroup.Add(1)
 		e.requestQueue.Chan <- ProcessFunc(func() {
-			r := req
 			for _, fun := range dp.ReqHandler {
 				if !fun(r) {
 					return
@@ -78,6 +74,7 @@ func (e *Engine) Add(dp *Deepcolor) {
 				}
 			}
 		})
+		req = dp.Requester.Next(nil)
 	}
 	return
 }

@@ -2,7 +2,6 @@ package transform
 
 import (
 	"encoding/json"
-	"github.com/aynakeya/deepcolor/util"
 	"gotest.tools/assert"
 	"regexp"
 	"testing"
@@ -16,7 +15,7 @@ func TestPipeline_Marshalling(t *testing.T) {
 	pipe := Pipeline{
 		Steps: []Translator{trans, trans},
 	}
-	data, err := util.MarshalIndentUnescape(pipe, "", "  ")
+	data, err := marshalIndentUnescape(pipe, "", "  ")
 	if err != nil {
 		t.Fatalf("Marshlling failed")
 	}

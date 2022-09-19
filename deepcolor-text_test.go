@@ -26,7 +26,7 @@ func TestFetchText(t *testing.T) {
 			},
 		},
 	}
-	err := tenc.Initialize(Get("https://crawler-test.com/", nil))
+	err := tenc.Initialize(QuickGet("https://crawler-test.com/", nil))
 	if err != nil {
 		log.Fatal(err)
 		return
