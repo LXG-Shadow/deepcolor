@@ -3,14 +3,14 @@ package deepcolor
 import (
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/transform"
-	"io/ioutil"
+	"io"
 	"log"
 	"strings"
 )
 
 func transformString(t transform.Transformer, s string) (string, error) {
 	r := transform.NewReader(strings.NewReader(s), t)
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 	return string(b), err
 }
 

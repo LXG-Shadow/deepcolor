@@ -1,31 +1,37 @@
 package deepcolor
 
 import (
-	"fmt"
+	"github.com/aynakeya/deepcolor/transform"
+	"gotest.tools/assert"
+	"log"
+	"regexp"
 	"testing"
 )
 
-func TestFetchText(t *testing.T) {
-	ten := TentacleHTML("https://crawler-test.com/", "utf-8")
-	result, err := Fetch(ten, Get, nil, nil)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+type TextInfoStruct struct {
+	X string
+}
 
-	singleTestItem2 := Item{
-		Type: ItemTypeSingle,
-		Rules: []ItemRule{
+func TestFetchText(t *testing.T) {
+	tenc := Tentacle{
+		Parser: &ParserRegexp{},
+		ValueMapper: map[string]*Selector{
+			"X": RegExpSelector("<title>.*</title>"),
+		},
+		Transformers: []*transform.Transformer{
 			{
-				Selector: RegExpSelector("<title>.*</title>"),
-				Substitution: map[string]string{
-					"</?title>": "",
-				},
+				"X",
+				"X",
+				transform.NewRegExpReplacer(regexp.MustCompile("</?title>"), ""),
 			},
 		},
 	}
-	fmt.Println(result.GetSingle(singleTestItem2) + "1")
-	if result.GetSingle(singleTestItem2) != "Crawler Test Site" {
-		t.Errorf("Fail, should be %s", "Crawler Test Site")
+	err := tenc.Initialize(QuickGet("https://crawler-test.com/", nil))
+	if err != nil {
+		log.Fatal(err)
+		return
 	}
+	var v TextInfoStruct
+	tenc.ExtractAndTransform(&v)
+	assert.Equal(t, "Crawler Test Site", v.X)
 }

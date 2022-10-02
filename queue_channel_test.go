@@ -2,7 +2,6 @@ package deepcolor
 
 import (
 	"fmt"
-	"math/rand"
 	"sync"
 	"testing"
 	"time"
@@ -35,21 +34,29 @@ func TestQueueChannel(t *testing.T) {
 func TestQueueChannel1(t *testing.T) {
 	qc := NewQueueChannel(128)
 	var wg sync.WaitGroup
-	wg.Add(1024)
+	wg.Add(1024 * 2)
 	for i := 0; i < 10; i++ {
 		ii := i
 		go func() {
 			for x := range qc.Chan {
 				fmt.Printf("%d done in worker %d\n", x, ii)
 				wg.Done()
-				time.Sleep(time.Second * time.Duration(rand.Intn(3)+2))
+				//time.Sleep(time.Second * time.Duration(rand.Intn(3)+2))
 			}
 		}()
 	}
 
+	time.Sleep(time.Second * 10)
+	fmt.Println("start adding")
 	for j := 0; j < 1024; j++ {
 		qc.Push(j)
 	}
-	fmt.Println("Finish add")
+	fmt.Println("adding finished")
+	time.Sleep(time.Second * 10)
+	fmt.Println("start adding")
+	for j := 0; j < 1024; j++ {
+		qc.Push(j)
+	}
+	fmt.Println("adding finished")
 	wg.Wait()
 }

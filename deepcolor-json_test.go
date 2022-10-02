@@ -2,46 +2,46 @@ package deepcolor
 
 import (
 	"fmt"
+	"github.com/aynakeya/deepcolor/transform"
+	"gotest.tools/assert"
+	"log"
+	"regexp"
 	"testing"
 )
 
+type InfoStructJson struct {
+	X string
+	Y []string
+}
+
 func TestFetchJson(t *testing.T) {
-	ten := TentacleJson("https://support.oneskyapp.com/hc/en-us/article_attachments/202761627/example_1.json", "utf-8")
-	result, err := Fetch(ten, Get, nil, nil)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	singleTestItem2 := Item{
-		Type: ItemTypeSingle,
-		Rules: []ItemRule{
+	tenc := Tentacle{
+		Parser: &ParserJson{},
+		ValueMapper: map[string]*Selector{
+			"X": JsonSelector("fruit"),
+			"Y": JsonSliceSelector("quiz.sport.q1.options"),
+		},
+		Transformers: []*transform.Transformer{
 			{
-				Selector: JsonSelector("fruit"),
-				Substitution: map[string]string{
-					"p": "b",
-				},
+				"X",
+				"X",
+				transform.NewRegExpReplacer(regexp.MustCompile("p"), "b"),
 			},
 		},
 	}
-	fmt.Println(result.GetSingle(singleTestItem2))
-	if result.GetSingle(singleTestItem2) != "Abble" {
-		t.Errorf("Fail, should be %s", "Crawler Test Site")
-	}
-
-	ten = TentacleJson("https://support.oneskyapp.com/hc/en-us/article_attachments/202761727/example_2.json", "utf-8")
-	result, err = Fetch(ten, Get, nil, nil)
+	err := tenc.Initialize(QuickGet("https://support.oneskyapp.com/hc/en-us/article_attachments/202761627/example_1.json", nil))
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 		return
 	}
-	listTestItem := Item{
-		Type: ItemTypeList,
-		Rules: []ItemRule{
-			{
-				Selector: JsonSelector("quiz.sport.q1.options"),
-			},
-		},
+	var s InfoStructJson
+	tenc.ExtractAndTransform(&s)
+	assert.Equal(t, "Abble", s.X)
+	err = tenc.Initialize(QuickGet("https://support.oneskyapp.com/hc/en-us/article_attachments/202761727/example_2.json", nil))
+	if err != nil {
+		log.Fatal(err)
+		return
 	}
-	fmt.Println(result.GetList(listTestItem))
+	tenc.ExtractAndTransform(&s)
+	fmt.Println(s.Y)
 }

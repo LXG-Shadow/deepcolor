@@ -1,124 +1,95 @@
 package deepcolor
 
 import (
-	"fmt"
-	"golang.org/x/net/context"
-	"golang.org/x/time/rate"
-	"sync"
-	"time"
+	"github.com/aynakeya/deepcolor/transform"
 )
 
-type Engine struct {
-	lock          sync.RWMutex
-	waitGroup     sync.WaitGroup
-	limiter       *rate.Limiter
-	waitChan      chan int
-	requestQueue  *QueueChannel
-	maxConnection int
-	context       context.Context
-	requestFunc   RequestFunc
-	ReqHandlers   []RequestHandler
-	RespHandlers  []ResponseHandler
+type RequestFunc func(req *Request) *Response
+type RequestHandler func(tentacle *Request) bool
+type ResponseHandler func(result *Response) bool
+type TentacleHandler func(tentacle *Tentacle)
+
+type Deepcolor struct {
+	ReqFunc     RequestFunc
+	Requester   Requester
+	ReqHandler  []RequestHandler
+	RespHandler []ResponseHandler
+	Tentacles   []*Tentacle
 }
 
-func NewEngine(maxConn int) *Engine {
-	e := &Engine{
-		requestFunc:   Get,
-		requestQueue:  NewQueueChannel(maxConn),
-		maxConnection: maxConn,
-		context:       context.Background(),
-		limiter:       rate.NewLimiter(rate.Every(time.Millisecond*10), 1),
-		ReqHandlers:   make([]RequestHandler, 0),
-		RespHandlers:  make([]ResponseHandler, 0),
-	}
-	e.makeAsyncWorkers()
-	return e
+func (d *Deepcolor) OnRequest(handlers ...RequestHandler) {
+	d.ReqHandler = append(d.ReqHandler, handlers...)
 }
 
-func (e *Engine) makeAsyncWorkers() {
-	for i := 0; i < e.maxConnection; i++ {
-		go e.newAsyncWorker()
-	}
+func (d *Deepcolor) OnResponse(handlers ...ResponseHandler) {
+	d.RespHandler = append(d.RespHandler, handlers...)
 }
 
-func (e *Engine) newAsyncWorker() {
-	for t := range e.requestQueue.Chan {
-		fmt.Println("Worker start for", t.(Tentacle).Url)
-		e.FetchTentacle(t.(Tentacle))
-		e.waitGroup.Done()
-		fmt.Println("Worker finish for", t.(Tentacle).Url)
+type TentacleMapper struct {
+	Selector   *Selector
+	Translator transform.Translator
+}
+
+func NewTentacleMapper(s *Selector, t transform.Translator) TentacleMapper {
+	return TentacleMapper{
+		Selector:   s,
+		Translator: t,
 	}
 }
 
-func (e *Engine) FetchTentacle(tentacle Tentacle) *TentacleResult {
-	err := e.limiter.WaitN(e.context, 1)
-	if err != nil {
-		return nil
+func NewTentacleSelector(s *Selector) TentacleMapper {
+	return TentacleMapper{
+		Selector:   s,
+		Translator: nil,
 	}
-	result, _ := Fetch(tentacle, e.requestFunc, e.ReqHandlers, e.RespHandlers)
-	return result
 }
 
-func (e *Engine) Fetch(uri string) *TentacleResult {
-	return e.FetchTentacle(TentacleHTML(uri, "utf-8"))
-}
-func (e *Engine) FetchTentacleAsync(tentacle Tentacle) {
-	e.waitGroup.Add(1)
-	e.requestQueue.Push(tentacle)
-
-	//go func() {
-	//	e.FetchTentacle(tentacle)
-	//	defer e.waitGroup.Done()
-	//}()
+type Tentacle struct {
+	Parser       ResponseParser
+	ValueMapper  map[string]TentacleMapper
+	Transformers []*transform.Transformer
+	Handlers     []TentacleHandler
 }
 
-func (e *Engine) FetchAsync(uri string) {
-	e.FetchTentacleAsync(TentacleHTML(uri, "utf-8"))
-	//go func() {
-	//	e.Fetch(uri)
-	//	defer e.waitGroup.Done()
-	//}()
+func (t *Tentacle) Initialize(response *Response) error {
+	return t.Parser.Initialize(response)
 }
 
-func (e *Engine) WaitUntilFinish() {
-	e.waitGroup.Wait()
+func (t *Tentacle) GetItems() map[string]interface{} {
+	items := make(map[string]interface{})
+	for key, rule := range t.ValueMapper {
+		v := t.Parser.Get(rule.Selector)
+		if rule.Translator != nil {
+			v = rule.Translator.MustApply(v)
+		}
+		items[key] = v
+	}
+	return items
 }
 
-func (e *Engine) SetPeriod(duration time.Duration) {
-	e.lock.Lock()
-	defer e.lock.Unlock()
-	e.limiter.SetLimit(rate.Every(duration))
+func (t *Tentacle) Extract(value interface{}) {
+	for key, rule := range t.ValueMapper {
+		if v, ok := transform.Field(key).GetValueE(value); ok {
+			fv := t.Parser.Get(rule.Selector)
+			if rule.Translator != nil {
+				fv = rule.Translator.MustApply(fv)
+			}
+			transform.SetFieldValue(fv, v)
+		}
+	}
 }
 
-func (e *Engine) SetBurst(burst int) {
-	e.lock.Lock()
-	defer e.lock.Unlock()
-	e.limiter.SetBurst(burst)
+func (t *Tentacle) Transform(value interface{}) error {
+	for _, tran := range t.Transformers {
+		err := tran.Transform(value)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-//func (e *Engine) SetMaxConnection(conn int) {
-//	e.lock.Lock()
-//	defer e.lock.Unlock()
-//	e.waitChan = make(chan int, conn)
-//	for i := 1; i <= conn; i++ {
-//		e.waitChan <- i
-//	}
-//}
-
-func (e *Engine) SetRequestFunc(requestFunc RequestFunc) {
-	e.lock.Lock()
-	defer e.lock.Unlock()
-	e.requestFunc = requestFunc
-}
-
-func (e *Engine) OnRequest(handlers ...RequestHandler) {
-	e.lock.Lock()
-	defer e.lock.Unlock()
-	e.ReqHandlers = append(e.ReqHandlers, handlers...)
-}
-
-func (e *Engine) OnResponse(handlers ...ResponseHandler) {
-	e.lock.Lock()
-	defer e.lock.Unlock()
-	e.RespHandlers = append(e.RespHandlers, handlers...)
+func (t *Tentacle) ExtractAndTransform(value interface{}) error {
+	t.Extract(value)
+	return t.Transform(value)
 }
