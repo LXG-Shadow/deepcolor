@@ -15,8 +15,8 @@ type TextInfoStruct struct {
 func TestFetchText(t *testing.T) {
 	tenc := Tentacle{
 		Parser: &ParserRegexp{},
-		ValueMapper: map[string]*Selector{
-			"X": RegExpSelector("<title>.*</title>"),
+		ValueMapper: map[string]*TentacleMapper{
+			"X": RegExpSelector("<title>.*</title>").ToMapper(),
 		},
 		Transformers: []*transform.Transformer{
 			{

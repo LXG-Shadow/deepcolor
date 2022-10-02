@@ -17,9 +17,9 @@ type InfoStructJson struct {
 func TestFetchJson(t *testing.T) {
 	tenc := Tentacle{
 		Parser: &ParserJson{},
-		ValueMapper: map[string]*Selector{
-			"X": JsonSelector("fruit"),
-			"Y": JsonSliceSelector("quiz.sport.q1.options"),
+		ValueMapper: map[string]*TentacleMapper{
+			"X": JsonSelector("fruit").ToMapper(),
+			"Y": JsonSliceSelector("quiz.sport.q1.options").ToMapper(),
 		},
 		Transformers: []*transform.Transformer{
 			{

@@ -30,15 +30,8 @@ type TentacleMapper struct {
 	Translator transform.Translator
 }
 
-func NewTentacleMapper(s *Selector, t transform.Translator) TentacleMapper {
-	return TentacleMapper{
-		Selector:   s,
-		Translator: t,
-	}
-}
-
-func NewTentacleSelector(s *Selector) TentacleMapper {
-	return TentacleMapper{
+func (s *Selector) ToMapper() *TentacleMapper {
+	return &TentacleMapper{
 		Selector:   s,
 		Translator: nil,
 	}
@@ -46,7 +39,7 @@ func NewTentacleSelector(s *Selector) TentacleMapper {
 
 type Tentacle struct {
 	Parser       ResponseParser
-	ValueMapper  map[string]TentacleMapper
+	ValueMapper  map[string]*TentacleMapper
 	Transformers []*transform.Transformer
 	Handlers     []TentacleHandler
 }

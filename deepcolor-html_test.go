@@ -20,13 +20,13 @@ type InfoStruct struct {
 func TestFetch(t *testing.T) {
 	tenc := Tentacle{
 		Parser: &ParserHTML{},
-		ValueMapper: map[string]TentacleMapper{
-			"X":   NewTentacleSelector(TextSelector("#logo")),
-			"X.A": NewTentacleSelector(TextSelector("#logo")),
-			"A":   NewTentacleSelector(TextSelector("#logo")),
-			"Y":   NewTentacleSelector(TextSliceSelector("body > div:nth-child(2) > div > div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > a")),
-			"Z":   NewTentacleSelector(TextSelector("body > div:nth-child(2) > div > h1")),
-			"B":   NewTentacleSelector(AttributeSliceSelector("body > div:nth-child(2) > div > div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > a", "href")),
+		ValueMapper: map[string]*TentacleMapper{
+			"X":   TextSelector("#logo").ToMapper(),
+			"X.A": TextSelector("#logo").ToMapper(),
+			"A":   TextSelector("#logo").ToMapper(),
+			"Y":   TextSliceSelector("body > div:nth-child(2) > div > div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > a").ToMapper(),
+			"Z":   TextSelector("body > div:nth-child(2) > div > h1").ToMapper(),
+			"B":   AttributeSliceSelector("body > div:nth-child(2) > div > div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > a", "href").ToMapper(),
 		},
 		Transformers: []*transform.Transformer{
 			{
