@@ -34,8 +34,8 @@ func main() {
 		Tentacles: []*deepcolor.Tentacle{
 			{
 				Parser: deepcolor.NewHTMLParser(),
-				ValueMapper: map[string]*deepcolor.Selector{
-					"Title": deepcolor.TextSelector(".detail_imform_name"),
+				ValueMapper: map[string]*deepcolor.TentacleMapper{
+					"Title": deepcolor.TextSelector(".detail_imform_name").ToMapper(),
 				},
 				Handlers: []deepcolor.TentacleHandler{
 					func(tentacle *deepcolor.Tentacle) {
