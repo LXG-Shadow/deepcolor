@@ -1,6 +1,7 @@
 package transform
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 )
@@ -8,38 +9,64 @@ import (
 // todo https://stackoverflow.com/questions/47187680/how-do-i-change-fields-a-slice-of-structs-using-reflect
 
 type Field string
-
-func (t Field) GetValue(inst interface{}) reflect.Value {
-	v := reflect.ValueOf(inst)
-	for _, f := range strings.Split(string(t), ".") {
-		if v.Kind() == reflect.Ptr {
-			v = v.Elem()
-		}
-		v = v.FieldByName(f)
-	}
-	return v
+type Value struct {
+	reflect.Value
+	parent reflect.Value
+	field  string
 }
 
-func (t Field) GetValueE(inst interface{}) (reflect.Value, bool) {
+func (t Field) GetValue(inst interface{}) Value {
 	v := reflect.ValueOf(inst)
+	var parent reflect.Value
+	var field string
 	for _, f := range strings.Split(string(t), ".") {
-		if v.Kind() == reflect.Ptr {
-			v = v.Elem()
+		parent = v
+		field = f
+		switch v.Kind() {
+		case reflect.Ptr:
+			v = v.Elem().FieldByName(f)
+		case reflect.Map:
+			v = v.MapIndex(reflect.ValueOf(f))
+		case reflect.Struct:
+			v = v.FieldByName(f)
+		default:
+			panic("not supported kind" + v.Kind().String())
 		}
-		if v.Kind() != reflect.Struct {
-			return v, false
+	}
+	return Value{v, parent, field}
+}
+
+func (t Field) GetValueE(inst interface{}) (Value, bool) {
+	v := reflect.ValueOf(inst)
+	var parent reflect.Value
+	var field string
+	for _, f := range strings.Split(string(t), ".") {
+		parent = v
+		switch v.Kind() {
+		case reflect.Ptr:
+			v = v.Elem().FieldByName(f)
+		case reflect.Map:
+			v = v.MapIndex(reflect.ValueOf(f))
+		case reflect.Struct:
+			v = v.FieldByName(f)
+		default:
+			return Value{}, false
 		}
-		v = v.FieldByName(f)
 		if !v.IsValid() {
-			return v, false
+			return Value{}, false
 		}
 	}
-	return v, true
+	return Value{v, parent, field}, true
 }
 
-func SetFieldValue(src interface{}, dst reflect.Value) {
+func SetFieldValue(src interface{}, dst Value) {
+	fmt.Println(dst.Kind())
 	if dst.Kind() == reflect.Ptr {
-		dst = dst.Elem()
+		dst.Value = dst.Elem()
+	}
+	if dst.parent.Kind() == reflect.Map {
+		dst.parent.SetMapIndex(reflect.ValueOf(dst.field), reflect.ValueOf(src))
+		return
 	}
 	if dst.Kind() != reflect.Slice {
 		dst.Set(reflect.ValueOf(src))

@@ -13,8 +13,8 @@ type Engine struct {
 	lock          sync.RWMutex
 	waitGroup     sync.WaitGroup
 	limiter       *rate.Limiter
-	waitChan      chan int
 	requestQueue  *QueueChannel
+	stopSignal    chan int
 	maxConnection int
 	context       context.Context
 }
@@ -22,6 +22,7 @@ type Engine struct {
 func NewEngine(maxConn int) *Engine {
 	e := &Engine{
 		requestQueue:  NewQueueChannel(maxConn),
+		stopSignal:    make(chan int),
 		maxConnection: maxConn,
 		context:       context.Background(),
 		limiter:       rate.NewLimiter(rate.Every(time.Millisecond*10), 1),
@@ -37,17 +38,31 @@ func (e *Engine) makeAsyncWorkers() {
 }
 
 func (e *Engine) newAsyncWorker() {
-	for t := range e.requestQueue.Chan {
-		err := e.limiter.WaitN(e.context, 1)
-		if err != nil {
-			continue
+	for {
+		select {
+		case <-e.stopSignal:
+			return
+		case req := <-e.requestQueue.Chan:
+			err := e.limiter.WaitN(e.context, 1)
+			if err != nil {
+				continue
+			}
+			(req.(ProcessFunc))()
+			e.waitGroup.Done()
 		}
-		(t.(ProcessFunc))()
-		e.waitGroup.Done()
 	}
 }
 
-func (e *Engine) Add(dp *Deepcolor) {
+// Stop close all worker goroutine
+func (e *Engine) Stop() {
+	select {
+	case <-e.stopSignal:
+	default:
+	}
+	e.stopSignal <- 1
+}
+
+func (e *Engine) StartParallel(dp *Deepcolor) {
 	var req = dp.Requester.Next(nil)
 	for req != nil {
 		r := req

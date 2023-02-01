@@ -5,9 +5,9 @@ import (
 )
 
 type Transformer struct {
-	Src  Field
-	Dest Field
-	Step Translator
+	Src  Field      `json:",omitempty"`
+	Dest Field      `json:",omitempty"`
+	Step Translator `json:",omitempty"`
 }
 
 func NewTransformer(src Field, dest Field, step Translator) *Transformer {
@@ -36,4 +36,8 @@ func (r *Transformer) UnmarshalJSON(data []byte) error {
 
 func (t *Transformer) Transform(value interface{}) error {
 	return Transform(value, t.Step, t.Src, t.Dest)
+}
+
+func (t *Transformer) Extract(value interface{}) (interface{}, error) {
+	return t.Step.Apply(t.Src.GetValue(value).Interface())
 }

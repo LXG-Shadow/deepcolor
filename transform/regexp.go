@@ -39,10 +39,12 @@ func (r *RegExpReplacer) UnmarshalJSON(data []byte) error {
 
 func NewRegExpReplacer(expression *regexp.Regexp, repl string) Translator {
 	t := &RegExpReplacer{
+		BaseTranslator: BaseTranslator{
+			Type: "RegExpReplacer",
+		},
 		Expression: expression,
 		Repl:       repl,
 	}
-	t.Extend(t)
 	return t
 }
 
@@ -68,21 +70,25 @@ type RegExpFind struct {
 
 func NewRegExpFindFirst(expression *regexp.Regexp, groupNum int) Translator {
 	t := &RegExpFind{
+		BaseTranslator: BaseTranslator{
+			Type: "RegExpFind",
+		},
 		Expression: expression,
 		GroupNum:   groupNum,
 		All:        false,
 	}
-	t.Extend(t)
 	return t
 }
 
 func NewRegExpFindAll(expression *regexp.Regexp, groupNum int) Translator {
 	t := &RegExpFind{
+		BaseTranslator: BaseTranslator{
+			Type: "RegExpFind",
+		},
 		Expression: expression,
 		GroupNum:   groupNum,
 		All:        true,
 	}
-	t.Extend(t)
 	return t
 }
 

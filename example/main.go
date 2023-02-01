@@ -35,7 +35,7 @@ func main() {
 			{
 				Parser: deepcolor.NewHTMLParser(),
 				ValueMapper: map[string]*deepcolor.TentacleMapper{
-					"Title": deepcolor.TextSelector(".detail_imform_name").ToMapper(),
+					"Title": deepcolor.SelectorText(".detail_imform_name").ToMapper(),
 				},
 				Handlers: []deepcolor.TentacleHandler{
 					func(tentacle *deepcolor.Tentacle) {
@@ -45,7 +45,7 @@ func main() {
 			},
 		},
 	}
-	engine.Add(&dp)
+	engine.StartParallel(&dp)
 	fmt.Println("1233")
 	engine.WaitUntilFinish()
 	fmt.Println("finished")

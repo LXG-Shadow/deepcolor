@@ -13,9 +13,11 @@ type Cast struct {
 
 func NewCast(destType string) Translator {
 	t := &Cast{
+		BaseTranslator: BaseTranslator{
+			Type: "Cast",
+		},
 		ToType: destType,
 	}
-	t.Extend(t)
 	return t
 }
 

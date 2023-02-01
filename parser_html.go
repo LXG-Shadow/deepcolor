@@ -2,6 +2,7 @@ package deepcolor
 
 import (
 	"github.com/PuerkitoBio/goquery"
+	"strings"
 )
 
 type ParserHTML struct {
@@ -13,7 +14,8 @@ func NewHTMLParser() ResponseParser {
 }
 
 func (p *ParserHTML) Initialize(resp *Response) (err error) {
-	p.doc, err = NewDocumentFromString(resp.String())
+	//p.doc, err = goquery.NewDocumentFromReader(strings.NewReader(dputil.DecodeString(resp.String(), resp.Request.Charset)))
+	p.doc, err = goquery.NewDocumentFromReader(strings.NewReader(resp.String()))
 	return err
 }
 

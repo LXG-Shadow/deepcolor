@@ -5,8 +5,8 @@ import (
 )
 
 type RequestFunc func(req *Request) *Response
-type RequestHandler func(tentacle *Request) bool
-type ResponseHandler func(result *Response) bool
+type RequestHandler func(request *Request) bool
+type ResponseHandler func(response *Response) bool
 type TentacleHandler func(tentacle *Tentacle)
 
 type Deepcolor struct {

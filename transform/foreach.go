@@ -7,9 +7,11 @@ type Foreach struct {
 
 func NewForeach(translator Translator) Translator {
 	t := &Foreach{
+		BaseTranslator: BaseTranslator{
+			Type: "Foreach",
+		},
 		InternTrans: translator,
 	}
-	t.Extend(t)
 	return t
 }
 

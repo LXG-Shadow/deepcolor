@@ -15,14 +15,23 @@ type Switcher struct {
 }
 
 func NewPipeline(steps ...Translator) Translator {
-	t := &Pipeline{Steps: steps}
-	t.Extend(t)
+	t := &Pipeline{
+		BaseTranslator: BaseTranslator{
+			Type: "Pipeline",
+		},
+		Steps: steps}
 	return t
 }
 
 func NewSwitcher(steps ...Translator) Translator {
-	t := &Switcher{Pipeline{Steps: steps}}
-	t.Extend(t)
+	t := &Switcher{
+		Pipeline: Pipeline{
+			BaseTranslator: BaseTranslator{
+				Type: "Switcher",
+			},
+			Steps: steps,
+		},
+	}
 	return t
 }
 

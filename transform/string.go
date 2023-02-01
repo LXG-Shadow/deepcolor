@@ -11,8 +11,7 @@ type StrCase struct {
 }
 
 func NewStrCase(lowercase bool) Translator {
-	t := &StrCase{Lowercase: lowercase}
-	t.Extend(t)
+	t := &StrCase{BaseTranslator{"StrCase"}, lowercase}
 	return t
 }
 
@@ -38,8 +37,7 @@ type Formatter struct {
 }
 
 func NewFormatter(format string) Translator {
-	t := &Formatter{Format: format}
-	t.Extend(t)
+	t := &Formatter{BaseTranslator{"Formatter"}, format}
 	return t
 }
 

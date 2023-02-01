@@ -16,7 +16,7 @@ func TestFetchText(t *testing.T) {
 	tenc := Tentacle{
 		Parser: &ParserRegexp{},
 		ValueMapper: map[string]*TentacleMapper{
-			"X": RegExpSelector("<title>.*</title>").ToMapper(),
+			"X": SelectorRegExp("<title>.*</title>").ToMapper(),
 		},
 		Transformers: []*transform.Transformer{
 			{
@@ -26,7 +26,7 @@ func TestFetchText(t *testing.T) {
 			},
 		},
 	}
-	err := tenc.Initialize(QuickGet("https://crawler-test.com/", nil))
+	err := tenc.Initialize(quickGet("https://crawler-test.com/", nil))
 	if err != nil {
 		log.Fatal(err)
 		return

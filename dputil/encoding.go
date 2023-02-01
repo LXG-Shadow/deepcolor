@@ -1,4 +1,4 @@
-package deepcolor
+package dputil
 
 import (
 	"golang.org/x/net/html/charset"

@@ -21,12 +21,12 @@ func TestFetch(t *testing.T) {
 	tenc := Tentacle{
 		Parser: &ParserHTML{},
 		ValueMapper: map[string]*TentacleMapper{
-			"X":   TextSelector("#logo").ToMapper(),
-			"X.A": TextSelector("#logo").ToMapper(),
-			"A":   TextSelector("#logo").ToMapper(),
-			"Y":   TextSliceSelector("body > div:nth-child(2) > div > div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > a").ToMapper(),
-			"Z":   TextSelector("body > div:nth-child(2) > div > h1").ToMapper(),
-			"B":   AttributeSliceSelector("body > div:nth-child(2) > div > div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > a", "href").ToMapper(),
+			"X":   SelectorText("#logo").ToMapper(),
+			"X.A": SelectorText("#logo").ToMapper(),
+			"A":   SelectorText("#logo").ToMapper(),
+			"Y":   SelectorTextSlice("body > div:nth-child(2) > div > div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > a").ToMapper(),
+			"Z":   SelectorText("body > div:nth-child(2) > div > h1").ToMapper(),
+			"B":   SelectorAttributeSlice("body > div:nth-child(2) > div > div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > a", "href").ToMapper(),
 		},
 		Transformers: []*transform.Transformer{
 			{
@@ -36,7 +36,7 @@ func TestFetch(t *testing.T) {
 			},
 		},
 	}
-	err := tenc.Initialize(QuickGet("https://crawler-test.com/", nil))
+	err := tenc.Initialize(quickGet("https://crawler-test.com/", nil))
 	if err != nil {
 		log.Fatal(err)
 		return

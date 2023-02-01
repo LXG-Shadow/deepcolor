@@ -17,14 +17,14 @@ type Selector struct {
 	Array bool
 }
 
-func TextSelector(selector string) *Selector {
+func SelectorText(selector string) *Selector {
 	return &Selector{
 		Type: SelectorTypeHTMLInnerText,
 		Path: selector,
 	}
 }
 
-func TextSliceSelector(selector string) *Selector {
+func SelectorTextSlice(selector string) *Selector {
 	return &Selector{
 		Type:  SelectorTypeHTMLInnerText,
 		Path:  selector,
@@ -32,14 +32,14 @@ func TextSliceSelector(selector string) *Selector {
 	}
 }
 
-func AttributeSelector(selector string, attribute string) *Selector {
+func SelectorAttribute(selector string, attribute string) *Selector {
 	return &Selector{
 		Type:  SelectorTypeHTMLAttribute,
 		Path:  selector,
 		Value: attribute,
 	}
 }
-func AttributeSliceSelector(selector string, attribute string) *Selector {
+func SelectorAttributeSlice(selector string, attribute string) *Selector {
 	return &Selector{
 		Type:  SelectorTypeHTMLAttribute,
 		Path:  selector,
@@ -48,21 +48,21 @@ func AttributeSliceSelector(selector string, attribute string) *Selector {
 	}
 }
 
-func RegExpSelector(selector string) *Selector {
+func SelectorRegExp(selector string) *Selector {
 	return &Selector{
 		Type: SelectorTypeTextRegExp,
 		Path: selector,
 	}
 }
 
-func JsonSelector(selector string) *Selector {
+func SelectorJson(selector string) *Selector {
 	return &Selector{
 		Type: SelectorTypeJsonValue,
 		Path: selector,
 	}
 }
 
-func JsonSliceSelector(selector string) *Selector {
+func SelectorJsonSlice(selector string) *Selector {
 	return &Selector{
 		Type:  SelectorTypeJsonValue,
 		Path:  selector,
