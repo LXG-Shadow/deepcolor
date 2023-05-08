@@ -1,6 +1,6 @@
 # Deepcolor 深海色
 
-A simple easy lightweight crawler framework by Aynakeya
+A simple easy lightweight http client + crawler framework by Aynakeya
 
 
 ## todo

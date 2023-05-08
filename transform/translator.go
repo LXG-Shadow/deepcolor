@@ -1,7 +1,7 @@
 package transform
 
 import (
-	"encoding/json"
+	"github.com/aynakeya/deepcolor/pkg/dynmarshaller"
 	"reflect"
 )
 
@@ -19,35 +19,6 @@ func (t BaseTranslator) GetType() string {
 	return t.Type
 }
 
-var _RegisteredTranslator = map[string]Translator{}
-
-func RegisterTranslator(name string, translator Translator) {
-	_RegisteredTranslator[name] = translator
-	//for _, translator := range translators {
-	//
-	//	rType := reflect.TypeOf(translator)
-	//	if rType.Kind() == reflect.Ptr {
-	//		_RegisteredTranslator[translator.GetType()] = reflect.New(rType.Elem()).Interface().(Translator)
-	//	} else {
-	//		_RegisteredTranslator[translator.GetType()] = translator
-	//	}
-	//}
-}
-
-func UnmarshalTranslator(data []byte) (Translator, error) {
-	var f BaseTranslator
-	if err := json.Unmarshal(data, &f); err != nil {
-		return nil, err
-	}
-	t, ok := _RegisteredTranslator[f.Type]
-	if !ok {
-		return nil, errorTranslatorNotFound
-	}
-	v := reflect.New(reflect.TypeOf(t).Elem()).Interface().(Translator)
-	err := json.Unmarshal(data, v)
-	return v, err
-}
-
 func applyTranslator(src, dest Value, translator Translator) error {
 	value, err := translator.Apply(src.Interface())
 	if err != nil {
@@ -59,4 +30,16 @@ func applyTranslator(src, dest Value, translator Translator) error {
 
 func Transform(value interface{}, translator Translator, src Field, dest Field) error {
 	return applyTranslator(src.GetValue(value), dest.GetValue(value), translator)
+}
+
+var translatorRegistry = dynmarshaller.NewDynamicUnmarshaller[Translator](make(map[string]Translator))
+
+func RegisterTranslator(translators ...Translator) {
+	for _, translator := range translators {
+		translatorRegistry.Register(translator.GetType(), translator)
+	}
+}
+
+func UnmarshalTranslator(data []byte) (Translator, error) {
+	return translatorRegistry.Unmarshal(data)
 }

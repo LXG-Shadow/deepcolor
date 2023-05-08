@@ -1,7 +1,6 @@
 package transform
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 )
@@ -36,31 +35,17 @@ func (t Field) GetValue(inst interface{}) Value {
 	return Value{v, parent, field}
 }
 
-func (t Field) GetValueE(inst interface{}) (Value, bool) {
-	v := reflect.ValueOf(inst)
-	var parent reflect.Value
-	var field string
-	for _, f := range strings.Split(string(t), ".") {
-		parent = v
-		switch v.Kind() {
-		case reflect.Ptr:
-			v = v.Elem().FieldByName(f)
-		case reflect.Map:
-			v = v.MapIndex(reflect.ValueOf(f))
-		case reflect.Struct:
-			v = v.FieldByName(f)
-		default:
-			return Value{}, false
+func (t Field) GetValueE(inst interface{}) (value Value, ok bool) {
+	defer func() {
+		if p := recover(); p != nil {
+			value = Value{}
+			ok = false
 		}
-		if !v.IsValid() {
-			return Value{}, false
-		}
-	}
-	return Value{v, parent, field}, true
+	}()
+	return t.GetValue(value), true
 }
 
 func SetFieldValue(src interface{}, dst Value) {
-	fmt.Println(dst.Kind())
 	if dst.Kind() == reflect.Ptr {
 		dst.Value = dst.Elem()
 	}

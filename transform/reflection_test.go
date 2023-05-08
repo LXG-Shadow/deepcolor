@@ -41,4 +41,6 @@ func TestField_GetValue(t *testing.T) {
 	assert.Equal(t, "3333", Field("F.D.B").GetValue(s).Interface())
 	assert.Equal(t, "4444", s.F.D.X)
 	assert.Equal(t, "4445", s.F.D.Y["key"])
+	_, ok := Field("F.D.H.key").GetValueE(s)
+	assert.Equal(t, false, ok)
 }

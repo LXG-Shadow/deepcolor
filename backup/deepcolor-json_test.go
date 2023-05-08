@@ -1,0 +1,48 @@
+package backup
+
+import (
+	"fmt"
+	"github.com/aynakeya/deepcolor/transform"
+	"github.com/aynakeya/deepcolor/transform/translators"
+	"gotest.tools/assert"
+	"log"
+	"regexp"
+	"testing"
+)
+
+type InfoStructJson struct {
+	X string
+	Y []string
+}
+
+func TestFetchJson(t *testing.T) {
+	tenc := Tentacle{
+		Parser: &ParserJson{},
+		ValueMapper: map[string]*TentacleMapper{
+			"X": SelectorJson("fruit").ToMapper(),
+			"Y": SelectorJsonSlice("quiz.sport.q1.options").ToMapper(),
+		},
+		Transformers: []*transform.Transformer{
+			{
+				"X",
+				"X",
+				translators.NewRegExpReplacer(regexp.MustCompile("p"), "b"),
+			},
+		},
+	}
+	err := tenc.Initialize(quickGet("https://support.oneskyapp.com/hc/en-us/article_attachments/202761627/example_1.json", nil))
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	var s InfoStructJson
+	tenc.ExtractAndTransform(&s)
+	assert.Equal(t, "Abble", s.X)
+	err = tenc.Initialize(quickGet("https://support.oneskyapp.com/hc/en-us/article_attachments/202761727/example_2.json", nil))
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	tenc.ExtractAndTransform(&s)
+	fmt.Println(s.Y)
+}
