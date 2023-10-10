@@ -7,7 +7,17 @@ type Config struct {
 	Timeout int
 }
 
+func NewConfig() *Config {
+	return &Config{
+		BaseUrl: "",
+		Header:  make(map[string]string),
+		Cookie:  make(map[string]string),
+		Timeout: 10,
+	}
+}
+
 type IBaseRequester interface {
+	// Config return a modifiable Config struct
 	Config() *Config
 	HTTP(req *Request) (*Response, error)
 }

@@ -16,12 +16,12 @@ func TestStructFilter(t *testing.T) {
 	a := A{B: "【喵萌奶茶屋】★07月新番★[莉可丽丝/Lycoris Recoil][05][1080p][简繁内封][招募翻译校对]"}
 	filter := &StructFilter{
 		Target: transform.Field("B"),
-		Filter: NewRegExpFilter(regexp.MustCompile("Lycoris Recoil"), true),
+		Filter: RegExp(regexp.MustCompile("Lycoris Recoil"), true),
 	}
 	assert.Equal(t, true, filter.Check(a))
 	filter1 := &StructFilter{
 		Target: transform.Field("B"),
-		Filter: NewRegExpFilter(regexp.MustCompile("Lycoris Recoil"), false),
+		Filter: RegExp(regexp.MustCompile("Lycoris Recoil"), false),
 	}
 	assert.Equal(t, false, filter1.Check(a))
 	data, err := json.MarshalIndent(filter, "", "  ")

@@ -12,7 +12,7 @@ type RegExpFilter struct {
 	Expression *regexp.Regexp
 }
 
-func NewRegExpFilter(expression *regexp.Regexp, include bool) transform.Filter {
+func RegExp(expression *regexp.Regexp, include bool) transform.Filter {
 	return &RegExpFilter{
 		BaseFilter: transform.BaseFilter{
 			Type: "RegExpFilter",

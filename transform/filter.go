@@ -1,6 +1,8 @@
 package transform
 
-import "github.com/aynakeya/deepcolor/pkg/dynmarshaller"
+import (
+	"github.com/aynakeya/deepcolor/common/dynmarshaller"
+)
 
 type Filter interface {
 	GetType() string

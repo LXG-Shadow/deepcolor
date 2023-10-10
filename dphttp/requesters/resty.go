@@ -1,8 +1,8 @@
 package requesters
 
 import (
+	"github.com/aynakeya/deepcolor/common/dputil"
 	"github.com/aynakeya/deepcolor/dphttp"
-	"github.com/aynakeya/deepcolor/pkg/dputil"
 	"github.com/go-resty/resty/v2"
 	"golang.org/x/net/context"
 	"time"
@@ -16,7 +16,7 @@ type restyRequester struct {
 func NewRestyRequester() dphttp.IRequester {
 	return dphttp.NewRequester(&restyRequester{
 		client: resty.New(),
-		config: &dphttp.Config{Timeout: 10},
+		config: dphttp.NewConfig(),
 	})
 }
 

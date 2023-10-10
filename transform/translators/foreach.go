@@ -20,7 +20,7 @@ func NewForeach(translator transform.Translator) transform.Translator {
 func (f *Foreach) Apply(value interface{}) (interface{}, error) {
 	v, ok := value.([]interface{})
 	if !ok {
-		return value, errorWrongSrcType("[]interface")
+		return value, transform.ErrorWrongSrcType("[]interface")
 	}
 	for index, _ := range v {
 		v[index] = f.InternTrans.MustApply(v[index])

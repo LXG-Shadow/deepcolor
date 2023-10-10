@@ -6,6 +6,7 @@ import (
 )
 
 type StructFilter struct {
+	transform.BaseFilter
 	Target transform.Field
 	Filter transform.Filter
 }

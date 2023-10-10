@@ -19,7 +19,7 @@ func NewStrCase(lowercase bool) transform.Translator {
 func (c *StrCase) Apply(value interface{}) (interface{}, error) {
 	s, ok := value.(string)
 	if !ok {
-		return s, errorWrongSrcType("string")
+		return s, transform.ErrorWrongSrcType("string")
 	}
 	if c.Lowercase {
 		return strings.ToLower(s), nil

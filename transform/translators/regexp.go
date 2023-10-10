@@ -52,7 +52,7 @@ func NewRegExpReplacer(expression *regexp.Regexp, repl string) transform.Transla
 func (r *RegExpReplacer) Apply(value interface{}) (interface{}, error) {
 	s, ok := value.(string)
 	if !ok {
-		return "", errorWrongSrcType("string")
+		return "", transform.ErrorWrongSrcType("string")
 	}
 	return r.Expression.ReplaceAllString(s, r.Repl), nil
 }
@@ -129,27 +129,27 @@ func (t *RegExpFind) Apply(value interface{}) (interface{}, error) {
 func (t *RegExpFind) applySingle(value interface{}) (string, error) {
 	s, ok := value.(string)
 	if !ok {
-		return "", errorWrongSrcType("string")
+		return "", transform.ErrorWrongSrcType("string")
 	}
 	rs := t.Expression.FindStringSubmatch(s)
 	if t.GroupNum < len(rs) {
 		return rs[t.GroupNum], nil
 	}
-	return "", errorRegexpInvalidGroup(t.GroupNum)
+	return "", transform.ErrorRegexpInvalidGroup(t.GroupNum)
 }
 
 func (t *RegExpFind) applyAll(value interface{}) ([]string, error) {
 	s, ok := value.(string)
 	if !ok {
-		return []string{}, errorWrongSrcType("string")
+		return []string{}, transform.ErrorWrongSrcType("string")
 	}
 	vs := []string{}
 	rs := t.Expression.FindAllStringSubmatch(s, -1)
 	if len(rs) == 0 {
-		return vs, errorRegexpInvalidGroup(t.GroupNum)
+		return vs, transform.ErrorRegexpInvalidGroup(t.GroupNum)
 	}
 	if t.GroupNum >= len(rs[0]) {
-		return vs, errorRegexpInvalidGroup(t.GroupNum)
+		return vs, transform.ErrorRegexpInvalidGroup(t.GroupNum)
 	}
 	for _, tmp := range rs {
 		vs = append(vs, tmp[t.GroupNum])

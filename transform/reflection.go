@@ -8,6 +8,7 @@ import (
 // todo https://stackoverflow.com/questions/47187680/how-do-i-change-fields-a-slice-of-structs-using-reflect
 
 type Field string
+
 type Value struct {
 	reflect.Value
 	parent reflect.Value
