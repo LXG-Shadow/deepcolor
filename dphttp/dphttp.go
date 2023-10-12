@@ -12,7 +12,8 @@ type ApiInfo[P ParameterType, T ParserResultType, R ResultType] struct {
 	Request RequestFunc[P]
 	Parser  ParserFunc[T]
 	Result  ResultFunc[T, R]
-	Next    NextRequestFunc[P, T, R]
+	// Next is optional, if Next exists, then it will be a sequence of requests
+	Next NextRequestFunc[P, T, R]
 }
 
 func (api *ApiInfo[P, T, R]) Run(requester IRequester, para P, result R) error {
@@ -43,20 +44,20 @@ func (api *ApiInfo[P, T, R]) Run(requester IRequester, para P, result R) error {
 	return nil
 }
 
-type ApiFuncResult[P ParameterType, R ResultType] func(P) (R, error)
-type ApiFunc[P ParameterType, R ResultType] func(P, R) error
+type ApiResultFunc[P ParameterType, R ResultType] func(P) (R, error)
+type ApiRecverFunc[P ParameterType, R ResultType] func(P, R) error
 
-func CreateResultFunc[P ParameterType, T ParserResultType, R ResultType](
-	requester IRequester, api *ApiInfo[P, T, *R]) ApiFuncResult[P, R] {
-	apiFunc := CreateApiFunc(requester, api)
+func NewResultFunc[P ParameterType, T ParserResultType, R ResultType](
+	requester IRequester, api *ApiInfo[P, T, *R]) ApiResultFunc[P, R] {
+	apiFunc := NewRecverFunc(requester, api)
 	return func(para P) (R, error) {
 		var result R
 		return result, apiFunc(para, &result)
 	}
 }
 
-func CreateApiFunc[P ParameterType, T ParserResultType, R ResultType](
-	requester IRequester, api *ApiInfo[P, T, R]) ApiFunc[P, R] {
+func NewRecverFunc[P ParameterType, T ParserResultType, R ResultType](
+	requester IRequester, api *ApiInfo[P, T, R]) ApiRecverFunc[P, R] {
 	if requester == nil {
 		panic("can't make api, requester is nil")
 	}

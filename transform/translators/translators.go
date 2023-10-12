@@ -13,5 +13,5 @@ func init() {
 	transform.RegisterTranslator(&StrCase{})
 	transform.RegisterTranslator(&Formatter{})
 	transform.RegisterTranslator(&Cast{})
-	transform.RegisterTranslator(&Setter{})
+	transform.RegisterTranslator(&Value{})
 }

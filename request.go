@@ -3,9 +3,10 @@ package deepcolor
 import (
 	"fmt"
 	"github.com/aynakeya/deepcolor/dphttp"
+	"github.com/spf13/cast"
 )
 
-func NewGetRequestWithSingleQuery(
+func NewGetRequestFuncWithSingleQuery(
 	uri string,
 	query string, headers map[string]string) dphttp.RequestFunc[string] {
 	return func(param string) (*dphttp.Request, error) {
@@ -21,7 +22,7 @@ func NewGetRequestWithSingleQuery(
 	}
 }
 
-func NewGetRequestWithQuery(
+func NewGetRequestFuncWithQuery(
 	uri string,
 	queries []string, headers map[string]string) dphttp.RequestFunc[[]string] {
 	return func(params []string) (*dphttp.Request, error) {
@@ -40,4 +41,45 @@ func NewGetRequestWithQuery(
 			Header: headers,
 		}, nil
 	}
+}
+
+func NewGetRequestFromUrl(
+	uri string,
+	headers map[string]string,
+	params ...any) *dphttp.Request {
+	return &dphttp.Request{
+		Method: dphttp.GET,
+		Url:    dphttp.UrlMustParse(fmt.Sprintf(uri, params...)),
+		Header: headers,
+	}
+}
+
+func NewGetRequestWithSingleQuery(
+	uri string,
+	query, value string, headers map[string]string) (*dphttp.Request, error) {
+	url := dphttp.UrlMustParse(uri)
+	paramVals := url.Query()
+	paramVals.Set(query, value)
+	url.RawQuery = paramVals.Encode()
+	return &dphttp.Request{
+		Method: dphttp.GET,
+		Url:    url,
+		Header: headers,
+	}, nil
+}
+
+func NewGetRequestWithQuery(
+	uri string,
+	queries map[string]any, headers map[string]string) (*dphttp.Request, error) {
+	url := dphttp.UrlMustParse(uri)
+	paramVals := url.Query()
+	for key, value := range queries {
+		paramVals.Set(key, cast.ToString(value))
+	}
+	url.RawQuery = paramVals.Encode()
+	return &dphttp.Request{
+		Method: dphttp.GET,
+		Url:    url,
+		Header: headers,
+	}, nil
 }

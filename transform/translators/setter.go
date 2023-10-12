@@ -2,26 +2,30 @@ package translators
 
 import "github.com/aynakeya/deepcolor/transform"
 
-type Setter struct {
+type Value struct {
 	transform.BaseTranslator
 	Value interface{}
 }
 
 func NewSetter(value interface{}) transform.Translator {
-	t := &Setter{
+	t := &Value{
 		BaseTranslator: transform.BaseTranslator{
-			Type: "Setter",
+			Type: "Value",
 		},
 		Value: value,
 	}
 	return t
 }
 
-func (f *Setter) Apply(value interface{}) (interface{}, error) {
+func NewValue(value interface{}) transform.Translator {
+	return NewSetter(value)
+}
+
+func (f *Value) Apply(value interface{}) (interface{}, error) {
 	return f.Value, nil
 }
 
-func (f *Setter) MustApply(value interface{}) interface{} {
+func (f *Value) MustApply(value interface{}) interface{} {
 	v, _ := f.Apply(value)
 	return v
 }
