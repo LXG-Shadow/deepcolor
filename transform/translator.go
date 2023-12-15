@@ -19,6 +19,31 @@ func (t BaseTranslator) GetType() string {
 	return t.Type
 }
 
+type translatorWrapper struct {
+	typ        string
+	translator func(value interface{}) (interface{}, error)
+}
+
+func (t *translatorWrapper) GetType() string {
+	return t.typ
+}
+
+func (t *translatorWrapper) Apply(value interface{}) (interface{}, error) {
+	return t.translator(value)
+}
+
+func (t *translatorWrapper) MustApply(value interface{}) interface{} {
+	v, _ := t.translator(value)
+	return v
+}
+
+func WrapTranslator(typ string, trans func(value interface{}) (interface{}, error)) Translator {
+	return &translatorWrapper{
+		typ:        typ,
+		translator: trans,
+	}
+}
+
 func applyTranslator(src, dest Value, translator Translator) error {
 	value, err := translator.Apply(src.Interface())
 	if err != nil {
