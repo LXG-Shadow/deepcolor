@@ -71,9 +71,11 @@ func (r *requester) Post(uri string, headers map[string]string, body any) (*Resp
 
 func (r *requester) GetQuery(uri string, query map[string]string, headers map[string]string) (*Response, error) {
 	u := BuildUrl(r.Config().BaseUrl, uri)
-	for k, v := range query {
-		u.Query().Add(k, v)
+	paramVals := u.Query()
+	for key, value := range query {
+		paramVals.Set(key, value)
 	}
+	u.RawQuery = paramVals.Encode()
 	return r.base.HTTP(&Request{
 		Method: GET,
 		Url:    u,
@@ -98,9 +100,11 @@ func (r *requester) PostX(uri string, body any) (*Response, error) {
 
 func (r *requester) GetQueryX(uri string, query map[string]string) (*Response, error) {
 	u := BuildUrl(r.Config().BaseUrl, uri)
-	for k, v := range query {
-		u.Query().Add(k, v)
+	paramVals := u.Query()
+	for key, value := range query {
+		paramVals.Set(key, value)
 	}
+	u.RawQuery = paramVals.Encode()
 	return r.base.HTTP(&Request{
 		Method: GET,
 		Url:    u,
