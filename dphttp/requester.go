@@ -1,5 +1,7 @@
 package dphttp
 
+import "net/http"
+
 type Config struct {
 	BaseUrl string
 	Header  map[string]string
@@ -54,7 +56,7 @@ func (r *requester) HTTP(req *Request) (*Response, error) {
 
 func (r *requester) Get(uri string, headers map[string]string) (*Response, error) {
 	return r.base.HTTP(&Request{
-		Method: GET,
+		Method: http.MethodGet,
 		Url:    BuildUrl(r.Config().BaseUrl, uri),
 		Header: headers,
 	})
@@ -62,7 +64,7 @@ func (r *requester) Get(uri string, headers map[string]string) (*Response, error
 
 func (r *requester) Post(uri string, headers map[string]string, body any) (*Response, error) {
 	return r.base.HTTP(&Request{
-		Method: POST,
+		Method: http.MethodPost,
 		Url:    BuildUrl(r.Config().BaseUrl, uri),
 		Header: headers,
 		Data:   FormatBodyData(body),
@@ -77,7 +79,7 @@ func (r *requester) GetQuery(uri string, query map[string]string, headers map[st
 	}
 	u.RawQuery = paramVals.Encode()
 	return r.base.HTTP(&Request{
-		Method: GET,
+		Method: http.MethodGet,
 		Url:    u,
 		Header: headers,
 	})
@@ -85,14 +87,14 @@ func (r *requester) GetQuery(uri string, query map[string]string, headers map[st
 
 func (r *requester) GetX(uri string) (*Response, error) {
 	return r.base.HTTP(&Request{
-		Method: GET,
+		Method: http.MethodGet,
 		Url:    BuildUrl(r.Config().BaseUrl, uri),
 	})
 }
 
 func (r *requester) PostX(uri string, body any) (*Response, error) {
 	return r.base.HTTP(&Request{
-		Method: GET,
+		Method: http.MethodPost,
 		Url:    BuildUrl(r.Config().BaseUrl, uri),
 		Data:   FormatBodyData(body),
 	})
@@ -106,7 +108,7 @@ func (r *requester) GetQueryX(uri string, query map[string]string) (*Response, e
 	}
 	u.RawQuery = paramVals.Encode()
 	return r.base.HTTP(&Request{
-		Method: GET,
+		Method: http.MethodGet,
 		Url:    u,
 	})
 }
